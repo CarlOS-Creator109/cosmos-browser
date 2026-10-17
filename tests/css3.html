@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8"><title>css3</title>
+<style>
+body{font-family:sans-serif;margin:16px;background:#fff}
+.side{float:right;width:200px;background:#ffe;border:1px solid #aa5;padding:8px;margin:0 0 8px 16px}
+.l{float:left;width:90px;height:60px;background:#9cf;margin:0 12px 6px 0}
+.clear{clear:both;background:#eee;padding:4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden}
+.ico{display:inline-block;width:16px;height:16px;background:#000;mask-image:url(x.svg)}
+</style></head><body>
+<h2>Floats</h2>
+<div class="side">Caja flotante a la derecha con texto.</div>
+<p>Este es un párrafo largo que debería envolver alrededor de la caja flotante de la derecha. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+<p>Segundo párrafo, también al lado de la flotante si todavía hay espacio vertical disponible, con texto adicional para llenar más líneas y comprobar cómo se comporta el ancho.</p>
+<div class="l"></div><p>Y aquí una caja flotante a la izquierda <img src="red.png" align="right" width="120"> con imagen alineada a la derecha por el atributo align, el texto debe rodearlas a ambas, un texto más largo para probar el envoltorio bastante bien.</p>
+<div class="clear">clear:both — debajo de todo</div>
+<span class="sr">oculto para lectores</span><span class="ico"></span> icono con máscara (sin cuadro negro)
+</body></html>

@@ -1,0 +1,14 @@
+<!doctype html><html><head><title>JS clicks</title>
+<style>.btn{display:block;background:#ccd;padding:8px;margin:6px;border:1px solid #889} .on{background:#9d9;} #log{background:#ffd;padding:6px;margin:6px}</style></head>
+<body><div class="btn" id="b1" onclick="document.getElementById('log').textContent+=' [attr-click]'; this.className='btn on'">Boton con onclick (atributo)</div>
+<div class="btn" id="b2">Boton con addEventListener (count=0)</div>
+<div class="btn" id="b3">Boton con bubble: hijo <b id="kid">negrita</b></div>
+<a id="lnk" href="http://example.com/">Enlace que se bloquea con preventDefault</a>
+<div id="log">log:</div>
+<script>
+var n=0, b2=document.getElementById('b2');
+b2.addEventListener('click', function(e){ n++; b2.textContent='Boton con addEventListener (count='+n+')'; });
+document.getElementById('b3').addEventListener('click', function(e){ document.getElementById('log').textContent+=' [bubble target='+e.target.tagName+' cur='+e.currentTarget.id+']'; });
+document.getElementById('lnk').addEventListener('click', function(e){ e.preventDefault(); document.getElementById('log').textContent+=' [prevented]'; });
+var tick=0; setInterval(function(){ tick++; document.title='tick'+tick; },100);
+</script></body></html>

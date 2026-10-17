@@ -1,0 +1,11 @@
+#!/bin/sh
+# Lanzador de Cosmos Browser: WebKit por defecto; motor propio solo si WebKit no está disponible.
+D="$(dirname "$(readlink -f "$0")")"
+wk_ok() { [ -x "$D/cosmos-wk" ] && ! ldd "$D/cosmos-wk" 2>/dev/null | grep -q "not found"; }
+if [ -z "$COSMOS_ENGINE" ]; then
+  if wk_ok; then COSMOS_ENGINE=webkit; else COSMOS_ENGINE=own; fi
+fi
+case "$COSMOS_ENGINE" in
+  webkit) exec "$D/cosmos-wk" "$@" ;;
+  *)      [ -x "$D/cosmos" ] || { echo "Falta compilar: make"; exit 1; }; exec "$D/cosmos" "$@" ;;
+esac

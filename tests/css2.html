@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8"><title>css2</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:sans-serif;line-height:1.5;background:#f5f5f5}
+.nav{display:flex;justify-content:space-between;align-items:center;background:#223;color:#fff;padding:10px 16px}
+.nav a{color:#9cf;text-decoration:none;margin-left:12px}
+.nav .logo{font-weight:bold;font-size:20px;text-transform:uppercase;color:#fff}
+.row{display:flex;gap:12px;padding:16px}
+.card{flex:1;background:#fff;border:1px solid #ccc;border-radius:8px;padding:12px}
+.card h3{margin:0 0 6px;border-bottom:2px solid #09f}
+.badge{background:#e33;color:#fff;border-radius:4px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 16px 16px}
+.grid div{background:#cde;padding:20px;text-align:center}
+.wrap{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px}
+.wrap span{background:#fc8;padding:6px 14px;border:1px solid #c80}
+.push{margin-left:auto;background:#fff;border:1px solid #888;padding:6px}
+.bar{display:flex;padding:16px}
+.cap{text-transform:capitalize}
+.lh{line-height:2;background:#fff;margin:0 16px}
+</style></head><body>
+<div class="nav"><span class="logo">Cosmos site</span><span><a href="#">Inicio</a><a href="#">Blog</a><a href="#">Contacto</a></span></div>
+<div class="row">
+<div class="card"><h3>Uno</h3>Texto de la primera tarjeta con <span class="badge">NUEVO</span> etiqueta.</div>
+<div class="card"><h3>Dos</h3>Segunda tarjeta, un poco más larga para ver cómo se reparte el ancho entre las tres columnas flex.</div>
+<div class="card"><h3>Tres</h3>Tercera.</div>
+</div>
+<div class="grid"><div>A</div><div>B</div><div>C</div><div>D</div><div>E</div></div>
+<div class="wrap"><span>uno</span><span>dos dos</span><span>tres tres tres</span><span>cuatro</span><span>cinco cinco</span><span>seis</span><span>siete siete siete siete</span><span>ocho</span><span>nueve nueve nueve</span><span>diez</span><span>once once once once once</span></div>
+<div class="bar"><div>izquierda</div><div class="push">derecha (margin-left:auto)</div></div>
+<p class="cap" style="padding:0 16px">hola mundo en capitalize ÁRBOL</p>
+<div class="lh">Línea con line-height: 2 para ver separación<br>segunda línea del mismo bloque</div>
+</body></html>

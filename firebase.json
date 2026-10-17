@@ -1,0 +1,10 @@
+{
+  "hosting": {
+    "public": "site",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "cleanUrls": true,
+    "headers": [
+      {"source": "**/*.@(png|css)", "headers": [{"key": "Cache-Control", "value": "public, max-age=3600"}]}
+    ]
+  }
+}

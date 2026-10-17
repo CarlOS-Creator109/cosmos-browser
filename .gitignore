@@ -1,0 +1,11 @@
+# binarios y objetos
+cosmos
+cosmos-wk
+cosmos-headless
+*.o
+quickjs/*.o
+# Firebase
+.firebase/
+.firebaserc
+*.log
+node_modules/

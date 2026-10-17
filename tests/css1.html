@@ -1,0 +1,31 @@
+<!doctype html><html><head><meta charset="utf-8"><title>css1</title>
+<style>
+:root{--main:#0a6;--pad:12px;--bg:#fef}
+body{background:var(--bg);font-family:sans-serif}
+.box{padding:var(--pad);color:var(--main);margin:calc(2 * 8px) 0}
+ul > li{color:red}
+ul li a{color:blue}
+li:first-child{font-weight:bold}
+li:nth-child(even){background:#ddd}
+li:last-child{text-decoration:underline}
+h2 + p{color:purple}
+a[href^="https"]{color:green}
+a[target=_blank]{background:yellow}
+p:not(.skip){border:0;color:#900}
+.imp{color:red !important}
+.imp{color:blue}
+@media (max-width: 600px){ .box{background:#f00} }
+@media (min-width: 600px){ .box{border-left:4px solid #000;background:#cfc} }
+@media print{ .box{display:none} }
+p.w{width:calc(50% - 10px);width:50%;background:#acf}
+.vw{width:30vw;background:#fca}
+a:hover{color:orange}
+</style></head><body>
+<div class="box">Caja con variables y calc</div>
+<ul><li>uno <a href="https://x.org">https</a></li><li>dos <a href="http://x.org" target="_blank">blank</a></li><li>tres</li><li>cuatro</li></ul>
+<h2>Titulo</h2><p>Párrafo morado (h2 + p) y no skip → rojo tras :not?</p>
+<p class="skip">Skip: debe quedar morado? no, solo el primero adyacente</p>
+<p class="imp">important: rojo</p>
+<p class="w">50% de ancho</p>
+<div class="vw">30vw</div>
+</body></html>

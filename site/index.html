@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cosmos Browser</title>
+<meta name="description" content="Cosmos Browser: un navegador ligero para Linux hecho por COS-Mods, con WebKit y un motor propio en C para hardware viejo.">
+<meta property="og:title" content="Cosmos Browser"><meta property="og:description" content="Navegador ligero para Linux, hecho por COS-Mods.">
+<meta property="og:image" content="img/logo.png"><meta name="theme-color" content="#060818">
+<link rel="icon" href="img/favicon.png"><link rel="stylesheet" href="style.css"></head>
+<body><div class="wrap">
+<nav><img src="img/logo.png" alt=""><b>Cosmos Browser</b><a href="#funciones">Funciones</a><a href="#instalar">Instalar</a><a href="#limites">Límites</a><a href="https://github.com/CarlOS-Creator109/cosmos-browser">GitHub</a></nav>
+
+<header class="hero">
+<img class="logo" src="img/logo.png" alt="Logo de Cosmos Browser">
+<h1>Cosmos Browser</h1>
+<p class="tag">Un navegador ligero para Linux, hecho por COS-Mods. Funciona incluso en una Vaio con Turion II sin SSE4.</p>
+<div class="btns"><a class="btn main" href="#instalar">Instalar</a><a class="btn" href="https://github.com/CarlOS-Creator109/cosmos-browser">Ver el código</a></div>
+<div class="shot"><img src="img/inicio.png" alt="Página de inicio de Cosmos Browser" width="1100" height="680"></div>
+</header>
+
+<section id="funciones"><h2>Qué trae</h2><p class="sub">Versión 0.8. Dos motores en uno: usa WebKit y, si el sistema no lo tiene, cae a un motor propio escrito en C.</p>
+<div class="grid">
+<div class="card"><h3>Motor WebKit</h3><p>Usa el WebKitGTK del sistema: Wikipedia, Google, YouTube con video. Ligero incluso frente a Firefox.</p></div>
+<div class="card"><h3>Motor propio en C</h3><p>HTML, CSS, JavaScript (QuickJS) y red hechos a mano, para cuando no hay WebKit.</p></div>
+<div class="card"><h3>GPU por defecto</h3><p>Dibuja con la tarjeta gráfica. <code>COSMOS_SOFTWARE=1</code> fuerza el modo por software.</p></div>
+<div class="card"><h3>Historial y marcadores</h3><p>Páginas internas <code>cosmos://history</code> y <code>cosmos://bookmarks</code>, estrella para marcar y autocompletado en la barra.</p></div>
+<div class="card"><h3>Modo privado</h3><p>Pestañas efímeras: sin historial, sin cookies en disco y sin guardar contraseñas.</p></div>
+<div class="card"><h3>Contraseñas</h3><p>Bóveda cifrada (AES-256-GCM) con contraseña maestra. Guarda y rellena solas.</p></div>
+<div class="card"><h3>Importar</h3><p>Trae contraseñas desde un CSV de Chrome, Edge, Brave, Firefox o Bitwarden, y cookies desde <code>cookies.txt</code> o el <code>cookies.sqlite</code> de Firefox.</p></div>
+<div class="card"><h3>Descargas</h3><p>Se guardan en <code>~/Download</code>. Un círculo en la barra se rellena de azul mientras baja y al pulsarlo ves el historial de descargas.</p></div>
+<div class="card"><h3>8 idiomas</h3><p>Inglés por defecto; también español, 日本語, 中文, 한국어, العربية, Русский y Українська, cambiables desde el menú.</p></div>
+<div class="card"><h3>Hecho para hardware viejo</h3><p>Pensado y probado en una Sony Vaio de 2011 con Arch Linux.</p></div>
+</div></section>
+
+<section id="instalar"><h2>Instalar</h2><p class="sub">En Arch Linux. Necesita compilarse; tarda poco.</p>
+<pre><code>sudo pacman -S --needed base-devel git sdl2 curl gtk3 webkit2gtk-4.1 \
+  gst-plugins-good gst-plugins-bad gst-libav libgcrypt sqlite \
+  noto-fonts noto-fonts-cjk
+git clone https://github.com/CarlOS-Creator109/cosmos-browser
+cd cosmos-browser
+make
+./cosmos-browser</code></pre>
+<p>El lanzador <code>./cosmos-browser</code> usa WebKit si está compilado y, si no, el motor propio. Fuerza uno con <code>COSMOS_ENGINE=own</code> o <code>COSMOS_ENGINE=webkit</code>.</p>
+<p>Para YouTube en el motor propio: <code>sudo pacman -S yt-dlp ffmpeg</code>. En Debian, Ubuntu o Void los paquetes tienen otros nombres, pero son los mismos.</p></section>
+
+<section id="limites"><h2>Lo que hay que saber</h2>
+<div class="card honest"><h3>Sin extensiones de Firefox</h3><p>WebKitGTK no soporta WebExtensions, así que no son compatibles. Lo más cercano que viene en camino son userscripts y un bloqueador de anuncios.</p></div>
+<br><div class="card honest"><h3>El gestor de contraseñas es un proyecto de hobby</h3><p>Está cifrado, pero no ha sido auditado. La contraseña maestra no se puede recuperar. No guardes cuentas importantes ahí todavía.</p></div>
+<br><div class="card honest"><h3>Las cookies de Chrome no se importan directo</h3><p>Van cifradas con el llavero del sistema. Exporta un <code>cookies.txt</code> con una extensión y impórtalo.</p></div>
+</section>
+
+<footer>Hecho por <b>COS-Mods</b> · Cosmos Browser 0.8 · <a href="https://github.com/CarlOS-Creator109/cosmos-browser">GitHub</a></footer>
+</div></body></html>

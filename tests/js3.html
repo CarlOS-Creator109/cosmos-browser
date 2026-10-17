@@ -1,0 +1,14 @@
+<!doctype html><html><head><title>Libs</title>
+<style>.box{background:#eef;padding:6px;margin:4px} .red{color:#c00}</style>
+<script src="lib/jquery.min.js"></script><script src="lib/vue.global.prod.js"></script></head>
+<body><div id="a" class="box">jQuery: esperando</div><div id="app" class="box">{{ msg }} - contador {{ n }} <button @click="n++">+1</button></div><ul id="l"></ul>
+<script>
+$(function(){
+  $('#a').text('jQuery ' + $.fn.jquery + ' ok').addClass('red').css('font-weight','bold');
+  for (var i=0;i<3;i++) $('<li>').text('li '+i).appendTo('#l');
+  $('#l li:first-child').append(' (primero)');
+  $('#a').on('click', function(){ $(this).append(' +click'); });
+  $('#a').after('<div class="box">insertado con after()</div>');
+});
+var app = Vue.createApp({ data: function(){ return {msg:'Vue funciona', n:0}; } }).mount('#app');
+</script></body></html>
