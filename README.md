@@ -155,3 +155,12 @@ Por defecto usa la GPU (aceleración por hardware); `COSMOS_SOFTWARE=1` fuerza r
 - **Idiomas:** inglés por defecto. Menú ☰ → Language: English, Español, 日本語, 中文 (simplificado), 한국어, العربية (de derecha a izquierda), Русский, Українська. Se guarda en `settings.conf`.
   Para ver bien CJK y árabe necesitas fuentes: `sudo pacman -S noto-fonts noto-fonts-cjk`.
   Las traducciones están en `gen_i18n.py` (edítalas y ejecuta `python3 gen_i18n.py` para regenerar `wk-i18n.h`).
+
+## 0.9 (edición WebKit): bloqueador de anuncios y H.264 en YouTube
+
+Menú ☰, dos interruptores (activados por defecto, se guardan en `settings.conf`):
+
+- **Bloquear anuncios y rastreadores:** `adblock-domains.txt` (≈130 dominios de redes de publicidad y rastreo) se compila a filtros de contenido de WebKit; además oculta huecos de anuncios típicos (`adsbygoogle`, etc.) y en YouTube salta los anuncios de video (silencia, acelera y salta; `ytads.js`). Puedes añadir tus dominios, uno por línea, en `~/.local/share/cosmos-browser/adblock-extra.txt` y reiniciar. Es una lista corta hecha a mano, no EasyList: no bloquea todo, y lo de YouTube puede dejar de funcionar cuando YouTube cambie su página.
+- **Forzar H.264 en YouTube** (`h264.js`, el mismo truco que la extensión h264ify): le oculta VP8/VP9/AV1 a YouTube para que mande H.264 (avc1). Se usa H.264 y no H.265 porque YouTube no sirve H.265 y la Radeon HD 4250 tampoco lo decodifica. Para que además lo haga la GPU: `sudo pacman -S libva-mesa-driver libva-utils` y comprueba con `vainfo` que sale `VAProfileH264…`.
+
+Al cambiar un interruptor se recarga la pestaña actual.

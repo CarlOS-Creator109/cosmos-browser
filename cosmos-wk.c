@@ -11,7 +11,7 @@
 #include "wk-import.h"
 #include "wk-i18n.h"
 
-#define VERSION "0.8-webkit"
+#define VERSION "0.9-webkit"
 #define HOME_URL "cosmos://home"
 
 static GtkWidget *win, *nb, *entry, *status, *btn_back, *btn_fwd, *btn_reload;
@@ -30,12 +30,15 @@ static int fullscreen_on;
 static int lang;                           /* índice en LANG_CODE (0 = inglés, por defecto) */
 static const char *T(int k) { return TR[lang][k] && *TR[lang][k] ? TR[lang][k] : TR[0][k]; }
 static int lang_rtl(void) { return !strcmp(LANG_CODE[lang], "ar"); }
+static int opt_h264 = 1, opt_adblock = 1;    /* se pueden apagar desde el menú */
 static void lang_load(void) {
     lang = 0;
     char *p = data_path("settings.conf"), *txt = NULL;
     if (g_file_get_contents(p, &txt, NULL, NULL)) {
         char *l = strstr(txt, "lang=");
         if (l) { l += 5; for (int i = 0; i < LANG_N; i++) if (!strncmp(l, LANG_CODE[i], strlen(LANG_CODE[i]))) lang = i; }
+        if (strstr(txt, "h264=0")) opt_h264 = 0;
+        if (strstr(txt, "adblock=0")) opt_adblock = 0;
         g_free(txt);
     }
     g_free(p);
@@ -43,7 +46,7 @@ static void lang_load(void) {
     if (e) for (int i = 0; i < LANG_N; i++) if (!strcmp(e, LANG_CODE[i])) lang = i;
 }
 static void lang_save(void) {
-    char *p = data_path("settings.conf"), *t = g_strdup_printf("lang=%s\n", LANG_CODE[lang]);
+    char *p = data_path("settings.conf"), *t = g_strdup_printf("lang=%s\nh264=%d\nadblock=%d\n", LANG_CODE[lang], opt_h264, opt_adblock);
     g_file_set_contents(p, t, -1, NULL); g_chmod(p, 0600); g_free(p); g_free(t);
 }
 
@@ -417,6 +420,88 @@ static GtkWidget *new_tab_ex(WebKitWebView *related, const char *url, gboolean f
 static GtkWidget *on_create(WebKitWebView *v, WebKitNavigationAction *a, gpointer d) { return new_tab_ex(v, NULL, TRUE, is_incog(GTK_WIDGET(v))); }
 #define new_tab(r, u, f) new_tab_ex((r), (u), (f), FALSE)
 
+
+/* ---------- H.264 en YouTube y bloqueador de anuncios ---------- */
+static WebKitUserScript *us_h264, *us_ytads;
+static WebKitUserContentFilter *ad_filter;
+static WebKitUserContentFilterStore *ad_store;
+static GList *all_ucms;      /* un gestor de contenido por pestaña (se quita al destruirse la vista) */
+
+static WebKitUserScript *make_script(const char *file, const char *const *allow) {
+    gsize len; char *js = read_whole(file, &len);
+    if (!js) return NULL;
+    WebKitUserScript *u = webkit_user_script_new(js, WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES, WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, allow, NULL);
+    g_free(js);
+    return u;
+}
+static void opts_apply_one(WebKitUserContentManager *u) {       /* deja la pestaña con lo que digan los interruptores */
+    if (us_h264) { webkit_user_content_manager_remove_script(u, us_h264); if (opt_h264) webkit_user_content_manager_add_script(u, us_h264); }
+    if (us_ytads) { webkit_user_content_manager_remove_script(u, us_ytads); if (opt_adblock) webkit_user_content_manager_add_script(u, us_ytads); }
+    if (ad_filter) { webkit_user_content_manager_remove_filter(u, ad_filter); if (opt_adblock) webkit_user_content_manager_add_filter(u, ad_filter); }
+}
+static void ucm_gone(gpointer data, GObject *where) { all_ucms = g_list_remove(all_ucms, where); }
+static void opts_register(WebKitUserContentManager *u) {
+    all_ucms = g_list_prepend(all_ucms, u); g_object_weak_ref(G_OBJECT(u), ucm_gone, NULL);
+    opts_apply_one(u);
+}
+static void opts_apply_all(void) { for (GList *l = all_ucms; l; l = l->next) opts_apply_one(l->data); }
+
+/* lista de dominios -> reglas de bloqueo de contenido de WebKit (JSON) */
+static char *build_adblock_json(void) {
+    GString *j = g_string_new("[");
+    int n = 0; const char *files[2] = {NULL, NULL}; char *extra = data_path("adblock-extra.txt");
+    gsize len; char *base = read_whole("adblock-domains.txt", &len);
+    char *txt[2] = {base, NULL}; g_file_get_contents(extra, &txt[1], NULL, NULL); (void)files;
+    for (int f = 0; f < 2; f++) {
+        if (!txt[f]) continue;
+        char **ln = g_strsplit(txt[f], "\n", -1);
+        for (int i = 0; ln[i]; i++) {
+            char *d = g_strstrip(ln[i]);
+            if (!*d || *d == '#') continue;
+            int ok = 1; for (char *c = d; *c; c++) if (!g_ascii_isalnum(*c) && *c != '.' && *c != '-') ok = 0;
+            if (!ok) continue;
+            GString *re = g_string_new("^https?://([^/]*\\\\.)?");
+            for (char *c = d; *c; c++) { if (*c == '.') g_string_append(re, "\\\\."); else g_string_append_c(re, *c); }
+            g_string_append(re, "[/:?#]");
+            g_string_append_printf(j, "%s{\"trigger\":{\"url-filter\":\"%s\"},\"action\":{\"type\":\"block\"}}", n++ ? "," : "", re->str);
+            g_string_free(re, TRUE);
+        }
+        g_strfreev(ln);
+    }
+    /* anuncios genéricos: ocultar sus huecos en cualquier página */
+    g_string_append_printf(j, "%s{\"trigger\":{\"url-filter\":\".*\"},\"action\":{\"type\":\"css-display-none\",\"selector\":"
+        "\"ins.adsbygoogle,.adsbygoogle,[id^='google_ads_'],[id*='div-gpt-ad'],[id^='ad-slot'],.ad-banner,.advert,.advertisement,.ads-banner,iframe[src*='doubleclick.net'],iframe[src*='googlesyndication.com']\"}}", n ? "," : "");
+    g_string_append(j, "]");
+    g_free(base); g_free(extra); g_free(txt[1]);
+    return g_string_free(j, FALSE);
+}
+static void on_filter_saved(GObject *o, GAsyncResult *r, gpointer d) {
+    GError *e = NULL;
+    WebKitUserContentFilter *f = webkit_user_content_filter_store_save_finish(WEBKIT_USER_CONTENT_FILTER_STORE(o), r, &e);
+    if (!f) { g_printerr("adblock: no pude compilar los filtros: %s\n", e ? e->message : "?"); g_clear_error(&e); return; }
+    if (ad_filter) webkit_user_content_filter_unref(ad_filter);
+    ad_filter = f;
+    opts_apply_all();
+    if (getenv("COSMOS_TEST_ADBLOCK")) g_printerr("ADBLOCK listo\n");
+}
+static void opts_init(void) {
+    static const char *yt[] = {"https://*.youtube.com/*", "https://youtube.com/*", "https://*.youtube-nocookie.com/*", NULL};
+    static const char *ytest[] = {"https://*.youtube.com/*", "https://youtube.com/*", "https://*.youtube-nocookie.com/*", "http://localhost/*", NULL};
+    const char *const *allow = getenv("COSMOS_TEST_H264") ? ytest : yt;
+    us_h264 = make_script("h264.js", allow); us_ytads = make_script("ytads.js", allow);
+    char *dir = g_build_filename(g_get_user_cache_dir(), "cosmos-browser", "filters", NULL); g_mkdir_with_parents(dir, 0700);
+    ad_store = webkit_user_content_filter_store_new(dir); g_free(dir);
+    char *json = build_adblock_json();
+    GBytes *b = g_bytes_new_take(json, strlen(json));
+    webkit_user_content_filter_store_save(ad_store, "cosmos-ads", b, NULL, on_filter_saved, NULL);
+    g_bytes_unref(b);
+}
+static void on_opt_toggled(GtkCheckMenuItem *mi, gpointer data) {
+    int *opt = data; *opt = gtk_check_menu_item_get_active(mi);
+    lang_save(); opts_apply_all();
+    WebKitWebView *v = cur_view(); if (v) webkit_web_view_reload(v);     /* para que se note en la página actual */
+}
+
 static void close_tab_for(GtkWidget *view) {
     if (gtk_notebook_get_n_pages(GTK_NOTEBOOK(nb)) <= 1) { gtk_widget_destroy(win); return; }
     gtk_notebook_remove_page(GTK_NOTEBOOK(nb), gtk_notebook_page_num(GTK_NOTEBOOK(nb), view));
@@ -450,6 +535,7 @@ static GtkWidget *new_tab_ex(WebKitWebView *related, const char *url, gboolean f
         : g_object_new(WEBKIT_TYPE_WEB_VIEW, "web-context", c, "user-content-manager", ucm, "settings", settings, NULL);
     g_object_set_data(G_OBJECT(view), "incog", GINT_TO_POINTER(incog ? 1 : 0));
     if (!incog) g_signal_connect(ucm, "script-message-received::cosmos", G_CALLBACK(on_script_msg), view);
+    opts_register(ucm);
     g_object_unref(ucm);
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
     GtkWidget *lab = gtk_label_new(incog ? T(K_PRIVATE) : T(K_NEW_TAB));
@@ -567,6 +653,11 @@ static void on_menu_btn(GtkWidget *b, gpointer d) {
     menu_add(m, T(K_M_LOCK), NULL, G_CALLBACK(act_lock));
     menu_add(m, T(K_M_IMPORT), NULL, G_CALLBACK(act_import));
     gtk_menu_shell_append(GTK_MENU_SHELL(m), gtk_separator_menu_item_new());
+    { GtkWidget *a = gtk_check_menu_item_new_with_label(T(K_M_ADBLOCK)), *h = gtk_check_menu_item_new_with_label(T(K_M_H264));
+      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(a), opt_adblock); gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(h), opt_h264);
+      g_signal_connect(a, "toggled", G_CALLBACK(on_opt_toggled), &opt_adblock); g_signal_connect(h, "toggled", G_CALLBACK(on_opt_toggled), &opt_h264);
+      gtk_menu_shell_append(GTK_MENU_SHELL(m), a); gtk_menu_shell_append(GTK_MENU_SHELL(m), h);
+      gtk_menu_shell_append(GTK_MENU_SHELL(m), gtk_separator_menu_item_new()); }
     GtkWidget *lm = gtk_menu_item_new_with_label(T(K_M_LANGUAGE)), *sub = gtk_menu_new(); GSList *grp = NULL;
     for (int i = 0; i < LANG_N; i++) {
         GtkWidget *it = gtk_radio_menu_item_new_with_label(grp, LANG_NAME[i]); grp = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(it));
@@ -909,7 +1000,7 @@ static void activate(GtkApplication *app, gpointer d) {
     setup_ctx(ctx);
     /* datos del usuario y autocompletado de la barra */
     { unsigned char r[16]; gcry_randomize(r, 16, GCRY_STRONG_RANDOM); for (int i = 0; i < 16; i++) g_snprintf(tok + i * 2, 3, "%02x", r[i]); }
-    hist_load(); bm_load(); dl_load();
+    hist_load(); bm_load(); dl_load(); opts_init();
     gtk_widget_set_visible(btn_dl, dls->len > 0);
     comp_store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
     comp = gtk_entry_completion_new();

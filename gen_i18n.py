@@ -19,6 +19,8 @@ T = {
 "M_IMPORT": ("Import passwords / cookies…", "Importar contraseñas / cookies…", "パスワード / Cookie をインポート…", "导入密码 / Cookie…", "비밀번호 / 쿠키 가져오기…", "استيراد كلمات المرور / الكوكيز…", "Импорт паролей / cookies…", "Імпорт паролів / cookies…"),
 "M_DOWNLOADS": ("Downloads", "Descargas", "ダウンロード", "下载", "다운로드", "التنزيلات", "Загрузки", "Завантаження"),
 "M_LANGUAGE": ("Language", "Idioma", "言語", "语言", "언어", "اللغة", "Язык", "Мова"),
+"M_H264": ("Force H.264 on YouTube", "Forzar H.264 en YouTube", "YouTube で H.264 を強制", "在 YouTube 上强制使用 H.264", "YouTube에서 H.264 강제", "فرض H.264 على يوتيوب", "Принудительно H.264 на YouTube", "Примусово H.264 на YouTube"),
+"M_ADBLOCK": ("Block ads and trackers", "Bloquear anuncios y rastreadores", "広告とトラッカーをブロック", "屏蔽广告和跟踪器", "광고 및 추적기 차단", "حظر الإعلانات والمتتبعات", "Блокировать рекламу и трекеры", "Блокувати рекламу та трекери"),
 "M_ABOUT": ("About Cosmos", "Acerca de Cosmos", "Cosmos について", "关于 Cosmos", "Cosmos 정보", "حول Cosmos", "О Cosmos", "Про Cosmos"),
 "PW_LOCKED_STATUS": ("Passwords locked", "Contraseñas bloqueadas", "パスワードをロックしました", "密码已锁定", "비밀번호가 잠겼습니다", "تم قفل كلمات المرور", "Пароли заблокированы", "Паролі заблоковано"),
 "CANCEL": ("Cancel", "Cancelar", "キャンセル", "取消", "취소", "إلغاء", "Отмена", "Скасувати"),
